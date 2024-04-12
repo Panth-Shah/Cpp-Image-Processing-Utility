@@ -143,3 +143,20 @@ Explanation of algorithm utilizing Mutext for concurrency control to analyze inp
 5. **Maintaining the Max Heap Size**: After pushing a new pixel onto the `maxHeap`, the algorithm checks if the size of the `maxHeap` exceeds a pre-defined threshold (in this case 50). If the size exceeds the threshold, the algorithm removes the pixel with the lowest priority (value) from the `maxHeap` using `maxHeap.pop()`, This ensures that the `maxHeap` always contains the top 50 pixels.
 
 6. **Unlocking the Mutes**: After updating the `maxHeap`, the function unlocks the mutex using `mtx.unlock()`, allowing other threads to access the `maxHeap`.
+
+### Summary:
+* Utilizing mutex to guard `maxHeap` while using 8 simultaneous threads can be a performance night-mare, where using a single thread with no mutex can very well produce better result in this case, which is very evident with this project's impelementation of concurrency using mutex where with increasing thread count, performance is actually going down.
+
+*   However, `threads-by-future` is an approach which demands a close monitoring of controlling how many threads are getting created by applying `degree of parallelism` constraint. Otherwise, with continuous thread creation to process data asynchrounously will be very hardwear intensive. Key issues to handle while using `async` and `futures` are as follows:
+    - Number of threads being created during the process.
+    - Merging results from multiple threads to a single result.
+    - How many async functions are being executed, as there could be a possibility that a single operation executed as async has further operations which are also getting executed asyn and this would create a snow-ball into very deep recursion of operations, which all would eventually fail if timed out.
+
+
+### Future Enhancements:
+
+* Add custom error codes for better exception handling upon calling this program from API endpoints. Better API documentation can be done with custom error codes to improve usability and accesibility.
+* Improve exception handling and edge case analysis for crash cases in multi-threading environment.
+* Add better visualization by adding more data points to analyze performance metrics of the algorithm upon using large raw image data to process with varied CPU cores available to improve degree of parallelism.
+* Add implementaiton which uses `std::semaphores` or `std::counting_semaphore` to compare results with using `std::mutex`, as mutex locks the resource while one thread is accessing it, adding guard on a variable with mutex, then attempting to work with it 100% of the time with 8 threads simultaneously will result to degraded performance over using a single thread with no mutex. 
+* Implement `thread pooling` to share threads and reduces overhead of creating and destroying threads while accessing large data records.
