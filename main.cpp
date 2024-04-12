@@ -16,7 +16,10 @@ int main() {
     
     // Read configuration parameters (width, height, output_file) from a JSON file
     auto [width, height, output_file, log_file, is_using_async] = ReadConfigurationFromJson("config.json");
-    
+    if(width <= 0 || height <= 0){
+        std::cout << "Invalid Height/Width provided, please correct data" << std::endl;
+        std::cout << std::endl;
+    }
     // Generate custom image data based on the specified width and height
     auto image = GenerateCustomImage(width, height);
 

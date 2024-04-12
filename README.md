@@ -14,27 +14,27 @@ ___
 Outlining approach taken here to solve the problem is broken down into smaller sub-problems and tasked as below:
 
 1. **Capturing Custom Dimensions and Configuration Details**: Write a utility to read configuration json which would be used to capture height and width details to produce raw image data along with other configuration details (e.g. export file name, log file name, process toggle for execution).
-```C++
-std::tuple<uint32_t, uint32_t, std::string, std::string, bool> ReadConfigurationFromJson(const std::string& filename);
-```
+    ```C++
+    std::tuple<uint32_t, uint32_t, std::string, std::string, bool> ReadConfigurationFromJson(const std::string& filename);
+    ```
 2. **Generating Raw Image Data**: Write a funtion which would take width(w) and height(h) dimensions read from configuration json to produce 2D grid with each cell value considered as a pixel and each pixel of this grid will be 16-bit word.
-```C++
-int WriteCustomImageFile(uint32_t w, uint32_t h, const std::string& out);
-```
+    ```C++
+    int WriteCustomImageFile(uint32_t w, uint32_t h, const std::string& out);
+    ```
 3. **Processing Pixes**: Define a function to process raw image as 2D grid sequentially or using multi-threading.
-```C++
-std::vector<Pixel> FindTopPixelsAsync(const std::vector<std::vector<int>>& image,  int numThreads);
+    ```C++
+    std::vector<Pixel> FindTopPixelsAsync(const std::vector<std::vector<int>>& image,  int numThreads);
 
-std::vector<Pixel> FindTopPixelsConcurrently(const std::vector<std::vector<int>>& image, int numThreads);
-```
+    std::vector<Pixel> FindTopPixelsConcurrently(const std::vector<std::vector<int>>& image, int numThreads);
+    ```
 4. **Identify Top 50 Pixels**: Write a function to define data structure and algorithm which would be used to parse raw image as a 2D grid and capture 50 pixels with heighest pixel values including their locations.
-```C++
-std::priority_queue<Pixel, std::vector<Pixel>, ComparePixels> GetTopPixelsWithMaxHeapAsync(std::vector<std::vector<int>> chunk, int startRow, int endRow);
+    ```C++
+    std::priority_queue<Pixel, std::vector<Pixel>, ComparePixels> GetTopPixelsWithMaxHeapAsync(std::vector<std::vector<int>> chunk, int startRow, int endRow);
 
-void GetTopPixelsWithMaxHeap(const std::vector<std::vector<int>>&, int startRow, int endRow, std::priority_queue<Pixel, std::vector<Pixel>, ComparePixels>& maxHeap, std::mutex& mtx);
+    void GetTopPixelsWithMaxHeap(const std::vector<std::vector<int>>&, int startRow, int endRow, std::priority_queue<Pixel, std::vector<Pixel>, ComparePixels>& maxHeap, std::mutex& mtx);
 
-void GetTopPixelsWithSorting(const std::vector<std::vector<int>>& image, std::vector<Pixel>& topPixels, int startRow, int endRow, std::mutex& mtx);
-```
+    void GetTopPixelsWithSorting(const std::vector<std::vector<int>>& image, std::vector<Pixel>& topPixels, int startRow, int endRow, std::mutex& mtx);
+    ```
 5. **Merging Results**: Merge results produced by mutliple threads paralelly and produce a comined result for final output.
 
 6. **Execution Time Tracking for Performance Analysis and Optimization**: Track total processing time equating to multiple permutations with changing degree of paralellism adjusted by number of threads available for processing.
@@ -115,3 +115,23 @@ ___
 
 **Step 8: Writting Log File:**
 > The top pixels and their locations are written to a log file which is named as provided from the configuration file.
+
+### Algorithm Walkthrough:
+
+Explanation of algorithm utilizing Mutext for concurrency control to analyze input chunk of image pixels for thread processing the data. Step by step analysis of this algorithm is as follows:
+
+1. **Input Parameters**:
+    - `maxHeap`: A priority queue of pixels, sorted in descending order based on some criterion. This priority queue will hold the top pixels found so far and will be shared as a single copy across different threads.
+    - `mtx`: A mutex, used for synchronization in multi-threaded enviornments to ensure that access to the 'maxHeap' is thread-safe.
+    - `imageChunk`: A 2D vector representing a chunk of data with specific height and width depending upon chunking for parallel processing, presumably containing pixel values. 
+    - `startRow`: The row index indicating the starting position of the chunk within the larger data set to store pixel index value in maxHeap.
+
+2. **Iterating Thrtoug the Image Chunk**: The function iterates through each element of the 2D 'image chunk' of data from larger data set processed by specific thread, using nested loops performing grid traversal.
+
+3. **Locking the Mutex**: Before accessing the shared `maxHeap` which is a shared data keeper across multiple threads, the function locks the mutex using `mtx.lock()`. This ensures that only one thread can access the `maxHap` at a time, preventing data corruption or race condition in multi-threaded environment.
+
+4. **Pushing Pixels into the Max Heap**: For pixels in the input image chunk, the algorithm creates a `Pixel` object containing the pixel value and it's position (adjusted row index and column index). This `Pixel` object is then pushed onto the `maxHeap`.
+
+5. **Maintaining the Max Heap Size**: After pushing a new pixel onto the `maxHeap`, the algorithm checks if the size of the `maxHeap` exceeds a pre-defined threshold (in this case 50). If the size exceeds the threshold, the algorithm removes the pixel with the lowest priority (value) from the `maxHeap` using `maxHeap.pop()`, This ensures that the `maxHeap` always contains the top 50 pixels.
+
+6. **Unlocking the Mutes**: After updating the `maxHeap`, the function unlocks the mutex using `mtx.unlock()`, allowing other threads to access the `maxHeap`.
