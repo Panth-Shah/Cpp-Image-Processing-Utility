@@ -66,7 +66,7 @@ ___
 > Max Heap - a binary tree-based data structure where each node has a value greater than or equal to the values of it's children. In the context of this project, the priority queue **'maxHeap'** is implemented using a max heap. Processing each grid pixel value, pixels with the heighest value (priority) will always be at the top of the heap, allowing for efficient retrieval of the top 50 pixels.
 
 ### Advantages Max Heap over Sorting:
-* **Efficiency**: Maintaining a max heap allows for efficient retrieval of the top 50 pixels by value. The time complexity of inserting an element into a max heap is O(logN), and the time complexity of removing the maximum element is also O(logN), where N is number of elements in the heap. This is more efficient than sorting entire data set, which has a typical time complexity of O(NlogN).
+* **Efficiency**: Maintaining a max heap allows for efficient retrieval of the top 50 pixels by value. The time complexity of `inserting` an element into a max heap is `O(logN)`, and the time complexity of `removing` the maximum element is also `O(logN)`, where N is number of elements in the heap. This is more efficient than `sorting entire data set`, which has a typical time complexity of `O(NlogN)`.
 * **Incremental Updates**: With sorting requiring reordering of entire dataset every time new element is inserted or deleted, updating a max heap involves only adjusting the heap structure locally, making it more suitable for incremental updates in a multi-threading environment.
 * **Memory Efficiency**: Sorting the entire data set requires addiitonal memory space to store the sorted result, whereas a max heap can be maintained in-place, requiring less memory overhead.
 
@@ -86,7 +86,7 @@ ___
     int cores = std::thread::hardware_concurrency();
     ```
 * Width (W) and Height (H) to generate imput raw image is not defined and so for the estimation is taken (800 x 800). However, users can set this value from <ins>config.json</ins> file without rebuilding entire application to test algorithm with different test data. It is assumed that user will provide valid user inputs for system to process.
-* Identifying top 50 pixels are implemented using maxHeap, however performance of this approach greatly varies based upon height, width and pixel value density distrution of the image. A thorough analysis is needed adjusting these parameters to come up with the best performance of the algorithm.
+* Identifying top 50 pixels are implemented using `maxHeap`, however performance of this approach greatly varies based upon height, width and pixel value density distrution of the image. A thorough analysis is needed adjusting these parameters to come up with the best performance of the algorithm.
 * It is assumed that users will not need to extract generated image out and every time program executes, it will generate a new 2d grid image for processing. However, a method is impelmented which can be used to export generated 2d raw image data which can be used over and over again for multiple iterations instead of generating new data every single time.
 * It is assumed that no specific order of grid values are exported if number of same value pixels exceed over 50. For example, if there are more than 50 pixels identified with heighest value, any random top 50 pixels will be returned as they're processed and merged parallely and key constraint for filtering is pixel value and not their grid location.
 
@@ -96,10 +96,18 @@ ___
 > Application starts by determining number of CPU cores available for parallel processing. This information is crucial for optimizing the use of parallelism and determine degree of parallelism.
 
 **Step 2. Reading Configuration Parameters**
-> Program reads configuration parameters such as image width, height, output file path, log file path, and whether to use asynchronous processing or multithreading using mutex approach to run the code from JSON file using custom utility which uses json parser.
-
+> Program reads configuration parameters such as image width, height, output file path, log file path, and whether to use asynchronous processing or multithreading using mutex approach to run the code from JSON file using custom utility which uses json parser. `config.json` added as follows:
+```JSON
+{
+    "Width": 800,
+    "Height": 800,
+    "Output_file": "output.txt",
+    "Log_file" : "log.txt",
+    "IsUsingAsync" : true
+}
+```
 **Step 3. Generating Image Data:**
-> Custom Image Data is generated based on specified height and width where each pixel value is 16-bit word where pixel values range from 0 to 65535.
+> Custom Image Data is generated based on specified height and width where each pixel value is `16-bit word` where pixel values range from 0 to 65535.
 
 **Step 4: Choosing Processing Mode:**
 > Program dynamically determines the processing mode and depending upon choice there are two options to follow: Start execution with concurrent threads and mutex or use asynchronous processing using futures without blocking existing processes.
