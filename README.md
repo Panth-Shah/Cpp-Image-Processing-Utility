@@ -1,13 +1,9 @@
-# AMD Assesment
-
 # Problem Statement:
 ___
 * Given a grayscale image in memory with each 16-bit word equating to a pixel value:
     - write a program to find the 50 pixels (including their location) with the highest pixel values.
     - Can be written in C or C++.
     - Please also provide any assumptions made in solving the problem.
-    - Your submission would be evaluated based on the following aspects in priority order: Efficiency, 2- Clarity, 3- Style and Comments
-
 
 # Solution Details:
 ___
